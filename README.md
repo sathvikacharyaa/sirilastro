@@ -1,2 +1,2 @@
-# sirilastro
- About This repository provides a concise guide on astrophotography image stacking using Siril, covering the entire workflow from setup to final processing. Ideal for beginners and experienced users alike.
+# Siril Astrophotography Image Stacking Guide 
+This repository offers a comprehensive guide on astrophotography image stacking using Siril. It covers the complete workflow, from the initial setup to the final stages of processing, making it accessible for both beginners. The guide breaks down each step in detail, ensuring clarity for those new to image stacking while also including tips and insights that experienced users will find valuable. Whether you’re capturing the night sky with a telescope or refining your image processing skills, this guide will help you achieve high-quality, polished astrophotography results.
