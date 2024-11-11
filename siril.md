@@ -312,8 +312,8 @@ If you have any questions or would like to get in touch, feel free to reach out 
 You can also connect with me on social media:
   
 - [Twitter/x](https://x.com/sathvikacharyaa )
-- [LinkedIn](linkedin.com/in/sathvikacharya )
-- [GitHub](github.com/sathvikacharyaa )
+- [LinkedIn](https://www.linkedin.com/in/sathvikacharya )
+- [GitHub](https://www.github.com/sathvikacharyaa )
   
   
   
