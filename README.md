@@ -23,7 +23,7 @@ Whether you're just getting started with astrophotography or looking to improve 
 
 ## 🔗 Live Website
 
-👉 [Visit the Website](#) *(Update this with your actual URL once deployed)*
+👉 [https://sathvikacharyaa.github.io/sirilastro/](#)
 
 ## 📖 License
 
