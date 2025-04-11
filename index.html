@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siril Tutorial: Image Stacking & Processing in Astrophotography</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: black; /* Dark background for the body */
+            color: #e6edf3;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex; /* Use flexbox for layout */
+        }
+        .left-menu {
+            width: 250px; /* Fixed width for the left menu */
+            margin-right: 2rem; /* Space between menu and content */
+            padding-top: 1rem; /* Align top of menu with content */
+            position: sticky; /* Make it stick on scroll */
+            top: 2rem; /* Distance from top when stuck */
+            height: calc(100vh - 4rem); /* Full viewport height minus header and footer */
+            overflow-y: auto; /* Enable vertical scrolling if needed */
+            border-right: 1px solid #30363d; /* Add a border */
+        }
+        .left-menu h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f0f6fc;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #30363d;
+        }
+        .left-menu ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+        .left-menu ul li {
+            font-size: 1rem;
+            color: #e6edf3;
+            line-height: 1.75;
+            margin-bottom: 0.75rem;
+        }
+        .left-menu ul li a {
+            color: #a7f3d0;
+            text-decoration: none;
+            font-weight: 500;
+            display: block; /* Make the whole li clickable */
+            padding: 0.25rem 0;
+        }
+        .left-menu ul li a:hover {
+            color: #6ee7b7;
+            text-decoration: underline;
+        }
+        .content-wrapper {
+            flex: 1; /* Take up remaining space */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #f0f6fc;
+            margin-bottom: 1rem;
+        }
+        .header p {
+            font-size: 1.25rem;
+            color: #d0d6e0;
+            margin-bottom: 2rem;
+        }
+        .section {
+            margin-bottom: 3rem;
+            background-color: #161b22;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+            border: 1px solid #30363d;
+        }
+        .section h2 {
+            font-size: 2.25rem;
+            font-weight: 600;
+            color: #f0f6fc;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #30363d;
+            padding-bottom: 0.75rem;
+            scroll-margin-top: 2rem; /* Add scroll margin for better targeting */
+        }
+        .section h3 {
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: #f0f6fc;
+            margin-bottom: 1.25rem;
+            scroll-margin-top: 2rem;
+        }
+        .section p {
+            font-size: 1.1rem;
+            color: #e6edf3;
+            line-height: 1.75;
+            margin-bottom: 1rem;
+        }
+        .section ul {
+            list-style: disc;
+            padding-left: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .section ul li {
+            font-size: 1.1rem;
+            color: #e6edf3;
+            line-height: 1.75;
+            margin-bottom: 0.75rem;
+        }
+        .section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 6px 8px -3px rgba(0, 0, 0, 0.5), 0 3px 6px -2px rgba(0, 0, 0, 0.4);
+            border: 1px solid #30363d;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #30363d;
+            color: #d0d6e0;
+            
+        }
+        .footer a {
+            color: #a7f3d0;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .footer a:hover {
+            color: #6ee7b7;
+            text-decoration: underline;
+        }
+        pre {
+            background-color: #0b0f13;
+            color: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            border: 1px solid #30363d;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        pre code {
+            padding: 0;
+            background-color: transparent;
+            color: inherit;
+            border-radius: 0;
+        }
+        .contact-info {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #30363d;
+        }
+        .contact-info p {
+            margin-bottom: 1rem;
+        }
+        .contact-info a {
+            color: #a7f3d0;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        blockquote {
+            margin: 1rem 0;
+            padding: 0rem 1rem; /* Add padding to create space from the left border */
+            background-color: #0b0f13;
+            border-left: 4px solid #6ee7b7;
+            color: #e6edf3;
+            font-style: italic;
+        }
+        .contact-info a:hover {
+            color: #6ee7b7;
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                flex-direction: column; /* Stack menu and content on small screens */
+            }
+            .left-menu {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 2rem;
+                position: relative; /* No longer sticky on small screens */
+                top: 0;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #30363d;
+                padding-bottom: 1rem;
+            }
+            .left-menu ul {
+                display: flex; /* Use flexbox for horizontal menu on small screens */
+                overflow-x: auto; /* Enable horizontal scrolling if needed */
+                padding-bottom: 0.5rem;
+                margin-bottom: 0;
+            }
+            .left-menu ul li {
+                margin-right: 1.5rem; /* Space between menu items */
+                margin-bottom: 0;
+            }
+            .left-menu h2{
+                display: none;
+            }
+            .content-wrapper {
+                flex: 1;
+            }
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            .header p {
+                font-size: 1.1rem;
+            }
+            .section {
+                padding: 1.5rem;
+            }
+            .section h2 {
+                font-size: 1.75rem;
+            }
+            .section h3 {
+                font-size: 1.5rem;
+            }
+            .section p, .section ul li {
+                font-size: 1rem;
+                line-height: 1.6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <div class="container">
+        <div class="left-menu">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#why-use-siril">Why use Siril?</a></li>
+                <li><a href="#installing-siril">Installing Siril</a></li>
+                <li><a href="#prerequisites">Prerequisites</a></li>
+                <li><a href="#practice-astrophotography">Practice Astrophotography</a></li>
+                <li><a href="#image-calibration">Image Calibration</a></li>
+                <li><a href="#launching-siril">Launching Siril</a></li>
+                <li><a href="#installing-scripts">Installing Scripts</a></li>
+                <li><a href="#stacking-images">Stacking Images</a></li>
+                <li><a href="#background-extraction">Background Extraction</a></li>
+                <li><a href="#photometric-color-calibration">Photometric Color Calibration</a></li>
+                <li><a href="#remove-green-noise">Remove Green Noise</a></li>
+                <li><a href="#stretching-image">Stretching Image</a></li>
+                <li><a href="#applying-colors">Applying Colors</a></li>
+                <li><a href="#conclusion">Conclusion</a></li>
+                <li><a href="#credits">Credits</a></li>
+                <li><a href="#contact-me">Contact Me</a></li>
+            </ul>
+        </div>
+        <div class="content-wrapper">
+            <header class="header">
+                <h1>Siril Tutorial: Image Stacking & Processing in Astrophotography</h1>
+                <p><b>By Sathvik Acharya</b></p>
+                <p>A comprehensive guide to stacking astrophotography images using Siril, a powerful and free software for astronomical image processing.</p>
+            </header>
+            
+            <section  class="section" style="text-align: center; background-color: #161b22; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4); border: 1px solid #30363d;">
+            <p style="font-size: 1.1rem; color: #e6edf3; line-height: 1.75; margin-bottom: 1rem;">Astrophotography allows us to capture the beauty of the night sky, but due to long exposure times and low light conditions, a single image often contains noise and lacks detail. To overcome this, astrophotographers use a technique called image stacking. By combining multiple images of the same scene, we can enhance the signal-to-noise ratio and reveal more celestial details.</p>
+            <p style="font-size: 1.1rem; color: #e6edf3; line-height: 1.75; margin-bottom: 1rem;">In this guide, I will walk you through the process of stacking your astrophotography images using Siril, a powerful, free software designed for astronomical image processing.</p>
+
+            </section>
+            <figure><center>
+                <img src="./images/46.png" alt="Stacked image of M31,The Andromeda Galaxy"><br>
+                <figcaption><center>Stacked image of M31,The Andromeda Galaxy.</center></figcaption>
+            </center></figure><br>
+            <section id="why-use-siril" class="section">
+                <h2>Why use Siril?</h2>
+                <p>
+                    Siril stands out as a specialized software for astrophotography image stacking, offering a range of powerful tools tailored for high-quality astronomical image processing. Key functionalities include precise alignment and calibration tools that correct shifts and distortions from atmospheric and optical factors, delivering sharp, accurate stacks. Siril’s stacking algorithms effectively reduce noise-critical in low-light astrophotography-while preserving fine details, resulting in clear, vibrant images. Additionally, Siril provides background extraction, color calibration, and photometric color correction, enhancing the natural colors of celestial objects. The software also supports both automated workflows and manual controls, accommodating users from beginners to advanced. As a free, open-source tool, Siril is continually updated, making it a robust and accessible choice for astrophotography enthusiasts.
+                </p>
+            </section>
+
+            <section id="installing-siril" class="section">
+                <h2>Installing Siril</h2>
+                <p>You can download and install Siril directly from the official website: <a href="https://siril.org/" class="text-green-400 hover:text-green-300">https://siril.org/</a></p>
+                <p><b>Here are the steps for installation on different platforms:</b> </p>
+                <p><strong><b>Linux Installation</b></strong></p>
+                <p><strong>For Ubuntu/Debian</strong></p>
+                <blockquote>
+                    <p>sudo apt install siril</p>
+                </blockquote>
+                <p><strong>For Fedora</strong></p>
+                <blockquote>
+                    <p>sudo dnf install siril</p>
+                </blockquote>
+                <p><strong>For Arch Linux</strong></p>
+                <blockquote>
+                    <p>sudo pacman -S siril</p>
+                </blockquote>
+
+            </section>
+
+            <section id="prerequisites" class="section">
+                <h2>Prerequisites</h2>
+                <p>
+                    To perform image stacking, you need a set of multiple images of the same celestial object or field. Ensure that these images are taken under similar conditions and with consistent settings to achieve optimal stacking results. The more images you have, the better the final result will be, as stacking helps to reduce noise and enhance details.
+                </p>
+            </section>
+
+            <section id="practice-astrophotography" class="section">
+                <h2>Practice Astrophotography Image Stacking</h2>
+                <p>You can download practice images for astrophotography image stacking from the following sources to get hands-on experience:</p>
+                <ul>
+                    <li><a href="https://www.astropix.com/" class="text-green-400 hover:text-green-300">Astropix</a></li>
+                    <li><a href="https://www.astrobackyard.com/" class="text-green-400 hover:text-green-300">AstroBackyard</a></li>
+                </ul>
+                <p>These resources provide excellent data sets for practicing your image stacking and processing techniques.</p>
+            </section>
+
+            <section id="image-calibration" class="section">
+                <h2>Image Calibration</h2>
+                <p>This section describes how to organize image files for stacking in Siril.</p>
+                <h3>Organizing Your Image Files for Stacking in Siril</h3>
+                <p>Before you begin processing your astrophotography images in Siril, it's essential to organize your files properly.</p>
+<ol>
+<li>1. Start by creating a main directory named after the object or star cluster you're working. (eg: <strong>M31</strong> - The Andromeda Galaxy)</li>
+</ol><br>
+<center>
+<p><img src="./images/one.png" alt="" width="685" height="347"></p>
+</center>
+<ol start="2">
+<li>2. Inside this directory, create four subdirectories: <code><strong>lights, darks, biases, and flats</strong>.</code></li>
+</ol><br>
+<center>
+<p><img src="./images/two.png" alt="" width="685" height="347"></p>
+</center>
+<ul>
+<li><code><strong>Lights:</strong></code> Place all your raw images of the object (the ones you plan to stack) in the lights folder.</li>
+<li><code><strong>Darks:</strong></code> Place your dark frame images here to account for sensor noise.</li>
+<li><code><strong>Biases:</strong></code> Add your bias frames in this folder to correct for readout noise.</li>
+<li><code><strong>Flats:</strong></code> Store flat field images to correct for vignetting or dust on your sensor.</li>
+</ul>
+<ol start="3">
+<li>3. In this step, we will be placing only the light files (the raw images) into the <strong>lights</strong> folder. For this guide, we'll be working exclusively with these light images.</li>
+</ol><br>
+<center>
+<p><img src="./images/three.png" alt="" width="685" height="347"></p></center>
+<p><strong>Note:</strong> These directories are crucial because Siril's built-in scripts rely on them for executing the stacking process. If these directories are not properly created and filled with the corresponding images, the scripts won't run, and you'll encounter errors. By following this structure, you'll ensure a smooth stacking workflow.</p>
+            </section>
+
+            <section id="launching-siril" class="section">
+                <h2>Launching Siril</h2>
+                <h3>Setting up the workspace</h3>
+                <p>
+                    By default, Siril might open with a different working directory than where your images are stored. To ensure that Siril can access your images and perform stacking correctly, follow these steps to change the working directory:
+                </p>
+                <ol>
+                    <li>1. Open Siril: Launch Siril on your computer.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/four.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="2">
+                    <li>2. To change the current directory in Siril, click the home icon located in the top-left corner of the window.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/five~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="3">
+                    <li>3. This action will open a file browser, allowing you to navigate to and select the directory where your images are stored.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/seven~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="4">
+                    <li>4. After navigating to the directory containing the lights, darks, flats, and biases folders, click <strong>Open</strong> to set this directory as your working directory in Siril.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/eight~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <p>Now, Siril is set to work with the images in the specified directory. You can verify this by checking the top-left corner of the Siril window, where the current working directory is displayed.</p>
+            </section>
+
+            <section id="installing-scripts" class="section">
+                <h2>Installing Scripts</h2>
+                <ol>
+                    <li>1. To install scripts, click the <strong>three-dash</strong> icon in the top-right corner of the Siril window.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/nine~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="2">
+                    <li>2. Click on <strong>Get Scripts</strong>.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/ten~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="3">
+                    <li>3. After clicking Get Scripts, you will be redirected to Siril’s documentation page. From there, locate the <a href="https://gitlab.com/free-astro/siril-scripts">GitLab</a> link under the <strong>Getting More Scripts</strong> section and click on it.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/111.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="4">
+                    <li>4. Click <strong>preprocessing</strong>.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/122.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="5">
+                    <li>5. Click <strong>OSC_Preprocessing_WithoutDBF.ssf</strong></li>
+                    </ol><br>
+                    <p><strong>Note:</strong> We will be downloading the OSC_Preprocessing_WithoutDBF.ssf script, as we are working exclusively with light frames.</p>
+                    <center>
+                    <p><img src="./images/13.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="6">
+                    <li>6. Download the <strong>OSC_Preprocessing_WithoutDBF.ssf</strong></li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/144.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <p>After downloading the script, place it in the following directory:</p>
+                    <blockquote>
+                    <p>/This PC/Local Disk (C:)/Program Files/Siril/scripts/OSC_Preprocessing_WithoutDBF.ssf</p>
+                    </blockquote>
+                    <p>Once the scripts are installed and placed in the correct directory, you're all set to begin the stacking process in Siril.</p>
+            </section>
+
+            <section id="stacking-images" class="section">
+                <h2>Stacking Images</h2>
+                <ol>
+                    <li>1. Click <strong>Scripts</strong> in the top menu.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/15~2.png" alt="" width="685" height="347"></p></center>
+                    <ol start="2">
+                    <li>2. Select <strong>OSC_Preprocessing_WithoutDBF</strong> from the list of available scripts.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/16~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="3">
+                    <li>3. Click <strong>Run</strong> to execute the script.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/17~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="4">
+                    <li>4. Wait for the script to complete. You can view the progress of the execution in the <strong>console</strong> window.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/18~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <p>The final stacked image will be saved in the main directory named M31.</p>
+                    <ol start="5">
+                    <li>5. To open the final stacked image, click <strong>Open</strong> in the Top Menu.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/19~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="6">
+                    <p>The final stacked image will be named <strong>result.fit</strong> and saved in FITS format.</p>
+                    6. Select <strong>result.fit</strong> and click Open at the bottom to load the image.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/20~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="7">
+                    <li>7. This is the raw, stacked image of M31 displayed in linear view.</li>
+                    </ol><br>       
+                    <center>
+                    <p><img src="./images/21~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <ol start="8">
+                    <li>8. To switch from Linear to Autostretch, simply click on <strong>Linear</strong> and select <strong>Autostretch</strong> to adjust the image view.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/22~2.png" alt="" width="685" height="347"></p>
+                    <p><img src="./images/23~2.png" alt="" width="685" height="347"></p>
+                    </center>               
+                    <p><strong>Note:</strong> Autostretch applies a temporary stretch to the image's data, making faint details more visible without permanently altering the raw data. This is useful for previewing your stacked image before performing any further post-processing.</p>
+                    <center>
+                    <p><img src="./images/24~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <p><strong>Note:</strong> After applying Autostretch to the stacked image, you may notice green noise. This is common and can be corrected during further processing.</p>
+                    <ol start="9">
+                    <li>9. To switch to Histogram View, select <strong>Histogram</strong> from the view options. Switching to Histogram View gives you finer control over the image's tonal range, enabling better visualization of details and adjustment of exposure.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/26~2.png" alt="" width="685" height="347"></p>
+                    </center>
+                    <p>In Histogram View, you can see the distribution of pixel values in the image. This view is useful for adjusting brightness and contrast levels.</p>
+
+            </section>
+
+            <section id="background-extraction" class="section">
+                <h2>Background Extraction</h2>
+                <p>Background extraction is a crucial step in astrophotography image processing. It helps to remove unwanted background noise or variations from your images, allowing the celestial objects to stand out more clearly. In this section, we'll go through the steps to perform background extraction in Siril.</p>                
+                <p>To begin post-processing, first crop the artifacts and noise around the edges, which are visible in the Histogram View.</p>
+                <ol>
+                <li>1. To crop, <strong>left-click</strong> on the image, select the area you wish to keep, then right-click and choose <strong>Crop</strong> to apply the changes.</li>
+                </ol><br>
+                <center>
+                <p><img src="./images/27~3.png" alt="" width="685" height="347"></p></center>
+                <p>After cropping, switch back to Autostretch view to enhance visibility, and then start the Background Extraction process.</p>
+                <ol start="2">
+                <li>2. Navigate to <strong>Image Processing</strong></li>
+                </ol><br>
+                <p>Background extraction in Siril is a process that helps to remove unwanted background noise or variations from your astronomical images.</p>
+                <center><p><img src="./images/28.png" width="685" height="347" alt=""></p></center>
+                <ol start="3">
+                <li>3. Select <strong>Background Extraction</strong>.</li>
+                </ol><br>
+                <center>
+                <p><img src="./images/29.png" alt="" width="685" height="347"></p></center>
+                <ol start="4">
+                <li>4. Generate samples.</li>
+                </ol>
+                <center>
+                <p><img src="./images/33.png" alt=""width="685" height="347"></p></center>
+                <p><strong>Note:</strong> Siril uses these samples to estimate the background intensity and gradients caused by factors like light pollution or sensor noise. After selecting the samples, Siril will subtract the estimated background model from your image, creating a cleaner and more uniform background.</p>
+                <ol start="5">
+                <li>5. To ensure accurate background extraction, <strong>right-click</strong> on any samples that are too close to bright stars or celestial objects to remove them. This helps prevent interference from objects in the image and ensures only the background is modelled.</li>
+                </ol><br>
+                <center>
+                <p><img src="./images/30.png" alt=""width="685" height="347"></p></center>
+                <ol start="6">
+                <li>6. Click on <strong>Compute Background</strong> to finalize the process and click apply.</li>
+                </ol><br>
+                <center>
+                <p><img src="./images/31.png" alt=""width="685" height="347"></p></center>
+                <p>After applying the background extraction, you will notice a significant improvement in the image quality. The background noise and variations will be reduced, allowing the celestial objects to stand out more clearly.</p>
+            </section>
+
+            <section id="photometric-color-calibration" class="section">
+                <h2>Photometric Color Calibration</h2>
+                <p>Photometric color calibration is essential in astrophotography image stacking to correct color imbalances caused by factors like light pollution, sensor characteristics, and varying exposure conditions. In Siril, this process adjusts the colors of the stacked images to match the real-world color of celestial objects, ensuring accurate and natural-looking results. Siril achieves this by analyzing the color of stars and other objects in the image and adjusting the red, green, and blue channels to remove any unwanted color casts. This calibration is vital for creating scientifically accurate and visually consistent images, especially when stacking multiple frames with different color biases.</p>
+                <ol>
+                <li>1. To perform Photometric color calibration, Click on <strong>Color Calibration</strong>.</li>
+                </ol><br>
+                <center>
+                <p><img src="./images/50.png" alt=""width="685" height="347"></p></center>
+                <ol start="2">
+                <li>2. Select <strong>Photometric Color Calibration</strong>.</li>
+                </ol><br>
+                <center>
+                <p><img src="./images/51.png" width="685" height="347" alt=""></p></center>
+                <p>A window will appear where you need to enter the catalog number to match the coordinates of Right Ascension (RA) and Declination (Dec). If you're using a telescope, the coordinates will be automatically displayed. However, if you're shooting with a DSLR, the coordinate values will be set to zero by default.</p>
+                <p>To calibrate the images of M31 (The Andromeda Galaxy), the Catalog number is <strong>NGC 224</strong>.</p>
+                <center>
+                    <p><img src="./images/52.png" alt=""width="685" height="347"></p></center>
+                <p>You can choose from various catalogs, such as <strong>VizieR</strong>, <strong>SIMBAD</strong>, or <strong>CDS</strong>, to match the coordinates to the appropriate catalog entry.</p>
+                <p>Add the focal length and pixel size of your telescope to improve the calibration accuracy. These values help refine the photometric correction based on your equipment.</p>
+                <p>Once you've entered all the necessary information, click OK.</p>
+                
+            </section>
+
+            <section id="remove-green-noise" class="section">
+                <h2>Remove Green Noise</h2>
+                <p>Green noise is a common issue in astrophotography images, especially when using certain cameras or sensors. It appears as a greenish tint or color cast in the image, which can detract from the overall quality and accuracy of the final result. Removing green noise is essential to achieve a more balanced and natural-looking image.</p>
+                <ol>
+                    <li>1. If any green noise persists in the image, click on <strong>Remove green noise</strong> to eliminate it.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/34.png" alt=""width="685" height="347"></p></center>
+                    <ol start="2">
+                    <li>2. Leave the default options unchanged, and simply click <strong>Apply</strong>.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/35.png" alt=""width="685" height="347"></p></center>  
+                    
+                    <center>
+                    <p><img src="./images/36.png" width="685" height="347"alt=""></p></center>
+                    <center><p>Cleaner and more balanced image after removing the green noise.</p></center>
+            </section>
+
+            <section id="stretching-image" class="section">
+                <h2>Stretching Image</h2>
+                <p>Stretching the image is a crucial step in astrophotography image processing. It enhances the visibility of faint details and colors in your stacked image, making it more visually appealing. In this section, we'll go through the steps to stretch your image effectively.</p>
+                <ol>
+                    <li>1. Change the view to <strong>linear View</strong> and Click on <strong>Histogram Transformation</strong> to stretch the image.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/40.png" alt=""width="685" height="347"></p></center>
+                    <ol start="2">
+                    <li>2. Apply the autostretch algorithm by clicking on the icon above clip%.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/41.png" alt=""width="685" height="347"></p></center>
+                    <ol start="3">
+                    <li>3. Select <strong>Asinh transformation</strong>. This adjustment will enhance the details in your image.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/37.png" alt=""width="685" height="347"></p></center>
+                    <ol start="4">
+                    <li>4. Adjust the <strong>Strech Factor</strong> to its maximum value to enhance the contrast and details in your image.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/38.png" alt=""width="685" height="347"></p></center>
+                    <ol start="5">
+                    <li>5. Click on <strong>Apply</strong> to apply the changes.</li></ol>       
+            </section>
+
+            <section id="applying-colors" class="section">
+                <h2>Applying Colors</h2>
+                <ol>
+                    <li>1. Click on <strong>Color Saturation</strong> option to enhance the vibrancy of colors in your image.</li>
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/42.png" alt=""width="685" height="347"></p></center>
+                    <ol start="2">
+                    <li>2. Choose <strong>Global</strong> to access a variety of color options.</li><br>
+                    
+                        <li>3. After selecting your desired color options, increase the color saturation by adjusting the <strong>amount</strong> slider. Click Apply to finalize and apply the changes to enhance the vibrancy of your image.</li>
+                        
+                    </ol><br>
+                    <center>
+                    <p><img src="./images/43.png" alt=""width="685" height="347"></p></center>
+                    
+                    
+                    <center>
+                    <p><img src="./images/46.png" alt=""width="685" height="347"></p></center>  
+                    <center>
+                        <p>Here is the result of the final stacked image. You can further refine and enhance it using various photo editing softwares for additional adjustments and improvements.</p>
+                        </center>
+                    <p>4. Click on the <strong>Save</strong> or <strong>Download</strong> option in the top right corner to save the final result image.</p>
+                    <center><p><img src="./images/47.png" alt=""width="685" height="347"></p></center>
+                    <p>5. When saving the image, you can select from different file formats to suit your needs.</p>
+                    <center><p><img src="./images/49.png" alt="" width="685" height="347"></p></center>
+                    <p>6. <strong>Save</strong> to download the final image.</p>
+            </section>
+
+            <section id="conclusion" class="section">
+                <h2>Conclusion</h2>
+                <p>
+                    Overall, Siril is an incredibly powerful tool for astrophotographers, offering a range of features that make complex tasks like image stacking and calibration much easier. Its support for automation through multiple scripts is a standout feature, saving you time and effort, especially when handling large numbers of images. However, achieving the best results will require some patience and practice as you master the workflow.
+                </p>
+                <p>
+                    It’s important to note that this guide is designed for beginners using telescopes for astrophotography and does not cover more advanced techniques such as generalized hyperbolic stretch transformations, deconvolution, noise reduction, or advanced star processing tools like StarNet.
+                </p>
+                <p>
+                    For those seeking deeper insight into these areas, I highly recommend checking out <a href="https://www.youtube.com/@DeepSpaceAstro" class="text-green-400 hover:text-green-300">Deep Space Astro</a> on YouTube, where they provide comprehensive tutorials on advanced image processing techniques.
+                </p>
+            </section>
+
+            <section id="credits" class="section">
+                <h2>Credits</h2>
+                <p>
+                    The images used in this guide on image stacking in Siril have been sourced from <a href="https://www.astropix.com/" class="text-green-400 hover:text-green-300">Astropix</a> and <a href="https://www.astrobackyard.com/" class="text-green-400 hover:text-green-300">AstroBackyard</a>. I acknowledge their invaluable contributions to this project by providing high-quality astrophotography resources.
+                </p>
+                <p>For more details, visit <a href="https://www.astropix.com/" class="text-green-400 hover:text-green-300">Astropix</a>  and <a href="https://www.astrobackyard.com/" class="text-green-400 hover:text-green-300">AstroBackyard</a>.</p>
+            </section>
+
+            <footer id="contact-me" class="footer">
+                <h1>Contact Me</h1>
+                    <p>If you have any questions or would like to get in touch, feel free to reach out to me:</p>
+                    <p>Email: <a href="mailto:sathvikacharyaa@gmail.com" class="text-green-400 hover:text-green-300">sathvikacharyaa@gmail.com</a></p>
+                    <p>You can also connect with me on social media:</p>
+                    <p>
+                        <a href="#" class="text-green-400 hover:text-green-300">Twitter/X</a> |
+                        <a href="#" class="text-green-400 hover:text-green-300">LinkedIn</a> |
+                        <a href="#" class="text-green-400 hover:text-green-300">GitHub</a>
+                    </p>
+                <div class="contact-info">
+                    
+                </div>
+                <p>&copy; 2024 Sathvik Acharya. All rights reserved.</p>
+            </footer>
+        </div>
+    </div>
+    <script>
+        document.querySelectorAll('.left-menu a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
